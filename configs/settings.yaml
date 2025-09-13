@@ -1,0 +1,45 @@
+# configs/settings.yaml
+# Configuration file for eConsult AI Reviewer
+
+# -------------------------
+# Model settings
+# -------------------------
+models:
+  sentiment_model: "distilbert-base-uncased-finetuned-sst-2-english"
+  summarizer_model: "sshleifer/distilbart-cnn-12-6"
+  keyword_extractor: "all-MiniLM-L6-v2"   # we'll use KeyBERT or a simple RAKE fallback
+
+# -------------------------
+# Thresholds and parameters
+# -------------------------
+thresholds:
+  sentiment_positive: 0.6
+  sentiment_negative: 0.4
+  max_summary_length: 100
+  min_summary_length: 25
+  top_keywords: 10
+
+# -------------------------
+# UI settings
+# -------------------------
+ui:
+  font_family: "Segoe UI"
+  font_size: 10
+  theme: "light"     # can be switched to dark later
+  default_tab: "live_demo"
+
+# -------------------------
+# Paths
+# -------------------------
+paths:
+  assets_dir: "assets/"
+  icons_dir: "assets/icons/"
+  sample_dataset: "assets/sample_comments.csv"
+  reports_dir: "reports/"
+
+# -------------------------
+# Logging
+# -------------------------
+logging:
+  level: "INFO"
+  log_file: "logs/app.log"

@@ -1,0 +1,28 @@
+# Core UI
+PyQt5>=5.15.10
+
+# NLP models
+transformers>=4.42.0
+torch>=2.2.0
+sentence-transformers>=3.0.1
+keybert>=0.8.5
+
+# Data handling
+pandas>=2.2.2
+openpyxl>=3.1.5     # Excel support
+tqdm>=4.66.5        # Progress bars
+
+# Visualization
+matplotlib>=3.9.2
+wordcloud>=1.9.3
+
+# Reporting / Export
+reportlab>=4.2.2
+python-pptx>=1.0.2
+
+# Utilities
+pyyaml>=6.0.2
+scikit-learn>=1.5.2
+
+# Optional but recommended (to avoid tokenization errors)
+nltk>=3.9.1

@@ -1,0 +1,59 @@
+/* General application styling */
+QMainWindow {
+    background-color: #f9f9f9;
+}
+
+QLabel {
+    font-size: 12pt;
+    color: #333333;
+}
+
+QPushButton {
+    background-color: #4a90e2;
+    color: white;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: bold;
+}
+
+QPushButton:hover {
+    background-color: #357ABD;
+}
+
+QPushButton:disabled {
+    background-color: #cccccc;
+    color: #666666;
+}
+
+QTabWidget::pane {
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+}
+
+QTabBar::tab {
+    padding: 8px 16px;
+    margin: 2px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    background: #eeeeee;
+}
+
+QTabBar::tab:selected {
+    background: #ffffff;
+    font-weight: bold;
+}
+
+QTextEdit {
+    border: 1px solid #cccccc;
+    border-radius: 6px;
+    background: #ffffff;
+    padding: 6px;
+    font-size: 11pt;
+}
+
+QTableWidget {
+    gridline-color: #dddddd;
+    border: 1px solid #cccccc;
+    border-radius: 6px;
+    background: #ffffff;
+}
