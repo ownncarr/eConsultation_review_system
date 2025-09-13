@@ -19,10 +19,15 @@ wordcloud>=1.9.3
 # Reporting / Export
 reportlab>=4.2.2
 python-pptx>=1.0.2
+fpdf2>=2.5.7        # PDF generation
+Pillow>=10.0.0      # Image processing
 
 # Utilities
 pyyaml>=6.0.2
 scikit-learn>=1.5.2
+numpy>=1.24.0       # Numerical operations
 
 # Optional but recommended (to avoid tokenization errors)
 nltk>=3.9.1
+streamlit>=1.20
+plotly>=5.0.0
