@@ -1,33 +1,23 @@
-# Core UI
-PyQt5>=5.15.10
+# Core
+streamlit>=1.22.0
+pandas>=1.5.0
+numpy>=1.23.0
+matplotlib>=3.6.0
+Pillow>=9.0.0
+wordcloud>=1.8.2
+fpdf>=1.7.2
 
-# NLP models
-transformers>=4.42.0
-torch>=2.2.0
-sentence-transformers>=3.0.1
-keybert>=0.8.5
+# Transformers / ML
+transformers>=4.30.0
+torch>=1.13.1
+sentencepiece>=0.1.97
+tokenizers>=0.12.1
+huggingface-hub>=0.12.0
+accelerate>=0.12.0
 
-# Data handling
-pandas>=2.2.2
-openpyxl>=3.1.5     # Excel support
-tqdm>=4.66.5        # Progress bars
+# Excel support
+openpyxl>=3.0.10
+XlsxWriter>=3.0.0
 
-# Visualization
-matplotlib>=3.9.2
-wordcloud>=1.9.3
-
-# Reporting / Export
-reportlab>=4.2.2
-python-pptx>=1.0.2
-fpdf2>=2.5.7        # PDF generation
-Pillow>=10.0.0      # Image processing
-
-# Utilities
-pyyaml>=6.0.2
-scikit-learn>=1.5.2
-numpy>=1.24.0       # Numerical operations
-
-# Optional but recommended (to avoid tokenization errors)
-nltk>=3.9.1
-streamlit>=1.20
-plotly>=5.0.0
+# Optional / utilities
+tqdm>=4.64.0
