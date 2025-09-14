@@ -2,32 +2,25 @@
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 import logging
 from typing import Tuple
-
+import streamlit as st
 # Internal (hidden) setting: confidence threshold for mapping to Neutral
 _NEUTRAL_THRESHOLD = 0.70
 
 logger = logging.getLogger(__name__)
 
+@st.cache_resource
 def load_pipelines():
     """
-    Load heavier/better models with graceful fallback.
-    Returns: (sentiment_pipeline, summarizer_pipeline)
+    Load summarizer + sentiment models once and cache them.
     """
-    # summarizer: heavy, accurate model
-    summarizer = None
-    sentiment = None
     try:
         summarizer = pipeline("summarization", model="facebook/bart-large-cnn", device=-1)
-    except Exception as e:
-        logger.warning("Could not load 'facebook/bart-large-cnn' summarizer: %s. Falling back to 't5-small'.", e)
+    except Exception:
         summarizer = pipeline("summarization", model="t5-small", device=-1)
 
-    # sentiment: try a robust RoBERTa-based sentiment; fallback to SST model
     try:
-        # popular robust sentiment model
         sentiment = pipeline("sentiment-analysis", model="cardiffnlp/twitter-roberta-base-sentiment-latest", device=-1)
-    except Exception as e:
-        logger.warning("Could not load 'cardiffnlp/twitter-roberta-base-sentiment-latest': %s. Falling back to 'distilbert-base-uncased-finetuned-sst-2-english'.", e)
+    except Exception:
         sentiment = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english", device=-1)
 
     return sentiment, summarizer
