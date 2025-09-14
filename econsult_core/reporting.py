@@ -8,7 +8,8 @@ import os
 from fpdf import FPDF
 from datetime import datetime
 import pandas as pd
-
+import streamlit as st
+import math
 
 @st.cache_data
 def generate_wordcloud(texts, max_words=150):
