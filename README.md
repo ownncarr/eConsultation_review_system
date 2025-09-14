@@ -1,150 +1,182 @@
 # eConsult AI Reviewer — MVP
 
-A lightweight PyQt5 desktop app that analyzes user comments / feedback using transformer models.  
-Features: sentiment analysis, summarization, keyword extraction, dataset batch processing, and export (PDF/PPTX/CSV).
+**eConsult AI Reviewer — MVP** is a modular Streamlit application that analyzes stakeholder comments and generates a professional PDF report. The application performs sentiment analysis, concise summarization, word-cloud generation, and keyword frequency extraction. It is designed as a minimal, maintainable MVP suitable for demonstrations, hackathons, and early-stage evaluation.
 
 ---
 
-## Quick start
+## Features
 
-### 1) Prerequisites
-- Python **3.10+**
-- ~8–16 GB free RAM (more recommended for transformer models)
-- Optional GPU for faster inference (install CUDA & GPU-enabled `torch` if available)
+* Sentiment classification mapped to `Positive` / `Neutral` / `Negative` (internal confidence threshold).
+* Concise summarization for each comment (uses a higher-quality summarizer with fallback).
+* Word cloud generation and top-keywords extraction.
+* Clean, timestamped PDF report that includes optional project and team logos, word cloud, keywords, and a wrapped results table with page numbers.
+* Two UI modes:
 
-### 2) Create & activate a virtual environment
-Linux / macOS:
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-Windows (PowerShell):
-```powershell
-python -m venv venv
-.env\Scripts\Activate.ps1
-```
-
-### 3) Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-> Note: Installing `transformers`, `torch`, `sentence-transformers` and `keybert` will download model weights at first run. This requires internet and may take time and disk space.
-
-### 4) Run the app
-From the project root:
-```bash
-python main.py
-```
-
-The main window will open. Use the **Live Demo** tab to paste a comment and run analysis, or the **Dataset** tab to upload a CSV/XLSX with a comment/text column.
+  * **Live Demo** — paste comments interactively.
+  * **Dataset Mode** — upload CSV / XLSX for batch analysis.
+* Modular codebase for easier testing, tuning and extension.
 
 ---
 
-## Project layout (key files)
+## Repository structure
 
 ```
 econsult-ai-reviewer/
-├── main.py
-├── configs/settings.yaml
-├── models/                 # Sentiment, summarizer, keyword extractor (transformer-based)
-├── preprocessing/          # text cleaning & chunking
-├── controllers/            # UI ↔ models glue (live and dataset)
-├── ui/                     # PyQt5 UI (main window + tabs + components)
-├── export/                 # PDF/PPTX/CSV exporters
-├── utils/                  # file utils, visualization, logger
-├── assets/                 # icons, styles.qss, sample_comments.csv
-├── data/                   # uploaded/ processed (runtime)
-├── requirements.txt
-└── README.md
+│
+├── app.py                        # Streamlit entrypoint (UI + glue)
+├── requirements.txt              # Python dependencies
+├── README.md
+├── assets/                       # optional: logos, fonts
+│   ├── project_logo.png
+│   └── team_logo.png
+└── econsult_core/                # core modules
+    ├── __init__.py
+    ├── models.py                 # model loading and sentiment mapping
+    ├── preprocessing.py          # cleaning, chunking, summarization helpers
+    └── reporting.py              # wordcloud, keywords, PDF report builder
 ```
 
 ---
 
-## Configuration
+## Quick start (local)
 
-Edit `configs/settings.yaml` to change model names (HuggingFace IDs), thresholds, paths, and UI settings. Example keys:
+These instructions assume a Unix-like shell. Adjust commands for Windows where necessary.
 
-```yaml
-models:
-  sentiment_model: "distilbert-base-uncased-finetuned-sst-2-english"
-  summarizer_model: "sshleifer/distilbart-cnn-12-6"
-  keyword_extractor: "distilbert-base-uncased"
+1. Clone the repository and change directory:
 
-thresholds:
-  sentiment_positive: 0.6
-  sentiment_negative: 0.4
-  max_summary_length: 100
-  min_summary_length: 25
-  top_keywords: 10
-
-paths:
-  assets_dir: "assets/"
-  reports_dir: "reports/"
+```bash
+git clone <repository-url>
+cd econsult-ai-reviewer
 ```
 
-If you change the model IDs to larger / better models, expect slower startup and larger downloads.
+2. Create and activate a Python virtual environment (Python 3.10+ recommended):
+
+```bash
+python -m venv .venv
+source .venv/bin/activate         # macOS / Linux
+.venv\Scripts\activate            # Windows (PowerShell)
+```
+
+3. Install dependencies:
+
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+4. (Optional) Add branding assets:
+
+Create an `assets/` directory at repository root and add optional images:
+
+* `assets/project_logo.png` — project logo (used in header and PDF)
+* `assets/team_logo.png` — team/institution logo (used in header and PDF)
+
+Recommended: PNG images (\~300×300 px). The app will resize images to fit the UI and PDF.
+
+5. Run the Streamlit app:
+
+```bash
+streamlit run app.py
+```
+
+Open the URL printed by Streamlit (typically `http://localhost:8501`).
 
 ---
 
-## How it works (high level)
+## Input format (Dataset Mode)
 
-- **LiveDemoController**: cleans text, runs sentiment, chunks & summarizes (if long), extracts keywords, returns a result dict for the UI.
-- **DatasetController**: loads CSV/XLSX, auto-detects text column (or use the input box), processes rows in sequence, saves a processed CSV in `data/processed/`.
-- **Models**: wrappers around HuggingFace `pipeline` for sentiment and summarization; KeyBERT (or TF-IDF fallback) for keywords.
-- **Export**: `export/` provides PDF, PPTX, and CSV export; each has graceful fallbacks if optional libs are missing.
+The dataset must contain a `submission_text` column. Optional columns such as `id` and `stakeholder_type` are supported and will be included in the output.
 
----
+Sample CSV:
 
-## Performance & tips
-
-- Transformer models load weights on first run — expect several hundred MBs downloaded and 10–60+ seconds to load depending on disk/connection and model size.
-- For batch processing of large datasets, run on a machine with enough RAM; consider enabling GPU and using a GPU-compatible `torch`.
-- To speed up local demos, swap heavy models in `configs/settings.yaml` for lighter ones (e.g., DistilBART, DistilBERT models).
-- For responsive UI under heavy work, convert synchronous processing to `QThread` / `QRunnable` (the UI currently runs tasks synchronously for MVP).
+```csv
+id,submission_text,stakeholder_type
+1,"We support the amendment but suggest clarifying clause 3.",Industry
+2,"This will hurt MSMEs — strongly oppose.",SME
+3,"Neutral: looks fine but add timeline.",Citizen
+```
 
 ---
 
-## Optional features & extending
+## PDF output
 
-- Swap PyQt5 → PyQt6 (requires API adjustments)
-- Add `QThreads` to offload heavy model inference
-- Add caching of model outputs in `data/processed/` to avoid repeated work
-- Add a settings dialog in UI to change `configs/settings.yaml` values
-- Replace KeyBERT with an embedding store (e.g., FAISS) for similarity / semantic search
+* Filenames are generated using a timestamp pattern: `econsult_report_YYYYMMDD_HHMMSS.pdf`.
+* The PDF includes:
+
+  * Project title and generation timestamp.
+  * Optional project and team logos in the header (if provided in `assets/`).
+  * Word cloud (full width).
+  * Top keywords section.
+  * Results table with columns: `ID`, `Sentiment`, `Score`, `Summary`. Summary text wraps using `multi_cell` so table content does not overflow the page.
+  * Footer with page numbers.
+* The PDF generation function signature remains:
+
+  ```py
+  make_pdf_report(df: pandas.DataFrame, wordcloud_img: PIL.Image, title: str = ..., project_logo_path: Optional[str] = None, team_logo_path: Optional[str] = None) -> bytes
+  ```
+
+---
+
+## Configuration & tuning
+
+* **Model selection and threshold**:
+
+  * Summarizer default: `facebook/bart-large-cnn` (fallback to `t5-small`).
+  * Sentiment default: `cardiffnlp/twitter-roberta-base-sentiment-latest` (fallback to `distilbert-base-uncased-finetuned-sst-2-english`).
+  * Internal neutral threshold for mapping model confidence to `Neutral` is defined inside `econsult_core/models.py`. Change that constant to tune sensitivity (not exposed in the UI).
+* **Performance**:
+
+  * Heavier models are slow on CPU. For faster inference, run with a GPU-enabled machine and the appropriate `torch` installation.
+  * For large datasets, add batching, background workers (Celery/RQ), or stream processing to avoid blocking the UI.
+
+---
+
+## Recommended improvements (next steps)
+
+* Add batching for model inference to improve throughput and reduce latency.
+* Add a background job queue for dataset analysis (Celery + Redis, RQ, or similar).
+* Add authentication/authorization for multi-user deployments.
+* Fine-tune models on domain-specific data for improved summarization and sentiment accuracy.
+* Optionally add interactive table editing with `st-aggrid` and an administrative dashboard for audits.
 
 ---
 
 ## Troubleshooting
 
-- **Model loading fails**: ensure internet access for first-run downloads. Check console/log file `logs/app.log` for stack traces.
-- **ImportError for optional libs**: install missing packages from `requirements.txt` (e.g., `pip install reportlab python-pptx`).
-- **Large memory usage / crashes**: try lighter models or run on a machine with more RAM; use CPU-only `torch` or GPU-accelerated `torch` if GPU & drivers available.
-- **No UI or QPA errors**: ensure PyQt5 installed and proper display drivers are present (on headless servers you’ll need an X server or run with `xvfb`).
+* **Transformer model download fails**: ensure outbound internet access or pre-cache models in the `TRANSFORMERS_CACHE` directory.
+* **Out of memory or slow performance**: switch to smaller models (edit `econsult_core/models.py`) or run on a machine with more RAM/GPU.
+* **PDF encoding**: default PDF encoding uses `latin-1`. For full Unicode support, register a TTF font in `reporting.py` using `pdf.add_font()` and switch the font usage accordingly.
 
 ---
 
-## Files to look at during development
+## Development
 
-- `ui/main_window.py` — main app wiring
-- `controllers/live_demo_controller.py` — main processing pipeline for live input
-- `models/sentiment_model.py` / `models/summarizer_model.py` — where HF pipelines are created
-- `configs/settings.yaml` — to configure model IDs and paths
+* Keep concerns separated:
 
----
-
-## License & credits
-
-- Project: MIT-style permissive use for the MVP. (Add a LICENSE file if you want to be explicit.)
-- Models & libraries: Follow respective licenses (HuggingFace model licenses, PyTorch, PyQt, etc.). Make sure to review model usage terms if using in production.
+  * `econsult_core/models.py` — change model names or mapping logic.
+  * `econsult_core/preprocessing.py` — modify text cleaning, chunking, or summarization orchestration.
+  * `econsult_core/reporting.py` — adjust PDF layout, fonts, or export behavior.
+* Unit tests are recommended for the preprocessing and reporting modules before productionization.
 
 ---
 
-## Contact / Next steps
+## Contributing
 
-If you want, I can:
-- Wire in `QThread` workers so the UI never blocks,
-- Add a settings dialog to change models from the UI,
-- Create a packaged executable (PyInstaller spec) for Windows/macOS,
-- Or generate a short demo screencast script / checklist for judges.
+Contributions are welcome. Suggested workflow:
+
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature/your-feature`.
+3. Implement changes and add tests when applicable.
+4. Open a pull request describing the changes and rationale.
+
+Include sample input files and brief reproduction steps for any bug fixes.
+
+---
+
+## Authors and credits
+
+* Project: eConsult AI Reviewer — MVP
+* Built for: SIH 2025 (Smart India Hackathon)
+* Team: GitLit
+
+
