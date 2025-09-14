@@ -8,9 +8,10 @@ import os
 from fpdf import FPDF
 from datetime import datetime
 import pandas as pd
-import math
 
-def generate_wordcloud(texts: List[str], max_words: int = 150) -> Image.Image:
+
+@st.cache_data
+def generate_wordcloud(texts, max_words=150):
     combined = " ".join([t for t in texts if t])
     wc = WordCloud(width=900, height=450, background_color="white", max_words=max_words)
     arr = wc.generate(combined).to_array()

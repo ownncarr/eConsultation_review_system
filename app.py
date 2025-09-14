@@ -1,4 +1,3 @@
-# app.py
 import io
 import re
 from io import BytesIO
@@ -9,41 +8,78 @@ import os
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
-
-from econsult_core import models, preprocessing, reporting
 from PIL import Image
+from econsult_core import models, preprocessing, reporting
+from streamlit_option_menu import option_menu
 
+# -----------------------
+# Page config
+# -----------------------
 st.set_page_config(page_title="eConsult AI Reviewer — MVP", layout="wide", page_icon="📝")
 
 # -----------------------
-# Header / Branding (left-aligned logo + name)
+# Sidebar
 # -----------------------
 assets_dir = "assets"
-project_logo_path = os.path.join(assets_dir, "project_logo.png")  # your project logo (top-left)
-team_logo_path = os.path.join(assets_dir, "team_logo.png")        # your team logo (top-right)
+project_logo_path = os.path.join(assets_dir, "project_logo.png")
+team_logo_path = os.path.join(assets_dir, "team_logo.png")
 
-col_logo, col_title, col_right = st.columns([1, 8, 1])
-with col_logo:
+with st.sidebar:
+    # Only the logo container, nothing above
     if os.path.exists(project_logo_path):
         try:
             logo_img = Image.open(project_logo_path)
-            st.image(logo_img, width=92)  # adjust size as needed
-        except Exception:
-            st.write("")  # fallback
-    st.markdown("**eConsult AI Reviewer — MVP**")
-
-with col_title:
-    st.write("")  # keep title compact (logo + name are shown left)
-
-with col_right:
-    if os.path.exists(team_logo_path):
-        try:
-            tlogo = Image.open(team_logo_path)
-            st.image(tlogo, width=86)
-        except Exception:
+            st.markdown(
+                """
+                <div style="
+                    background: linear-gradient(135deg, #f5e9da 0%, #e9dbc7 100%);
+                    border-radius: 24px;
+                    padding: 32px 16px 24px 16px;
+                    margin-bottom: 18px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    box-shadow: 0 4px 16px rgba(200, 182, 166, 0.08);
+                ">
+                """,
+                unsafe_allow_html=True
+            )
+            st.image(logo_img, use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        except Exception as e:
             st.write("")
-
-st.markdown("---")
+    st.markdown("---")
+    # Sidebar Option Menu with modern light brown colors
+    selected_tab = option_menu(
+        menu_title=None,
+        options=["Live Demo", "Dataset Mode", "About / Notes"],
+        icons=["box-arrow-up-right", "file-earmark-spreadsheet", "info-circle"],
+        menu_icon="cast",
+        default_index=0,
+        orientation="vertical",
+        styles={
+            "container": {
+                "padding": "0px",
+                "background": "linear-gradient(135deg, #f5e9da 0%, #e9dbc7 100%)",
+                "border-radius": "16px",
+                "box-shadow": "0 2px 8px rgba(200,182,166,0.06)"
+            },
+            "nav-link": {
+                "font-size": "18px",
+                "font-weight": "500",
+                "text-align": "left",
+                "margin": "0px",
+                "color": "#6e5849",
+                "hover-color": "#c8b6a6",
+                "border-radius": "8px"
+            },
+            "nav-link-selected": {
+                "background": "linear-gradient(90deg, #c8b6a6 0%, #e9dbc7 100%)",
+                "color": "#fff",
+                "font-weight": "700"
+            },
+        }
+    )
 
 # -----------------------
 # Load models (cached)
@@ -52,12 +88,14 @@ st.markdown("---")
 def load_pipelines():
     return models.load_pipelines()
 
-sentiment_pipe, summarizer = load_pipelines()
+def get_pipelines():
+    return load_pipelines()
 
 # -----------------------
-# Utility helpers & analysis (unchanged)
+# Utility helpers & analysis
 # -----------------------
 def analyze_texts(texts: List[str], progress_callback=None):
+    sentiment_pipe, summarizer = get_pipelines()
     processed = []
     cleaned_texts = []
     total = len(texts)
@@ -85,57 +123,95 @@ def analyze_texts(texts: List[str], progress_callback=None):
     return processed, cleaned_texts
 
 def sentiment_color_label(s):
-    if s == "Positive":
-        return "🟢 Positive"
-    if s == "Neutral":
-        return "🟡 Neutral"
-    if s == "Negative":
-        return "🔴 Negative"
+    if s == "Positive": return "🟢 Positive"
+    if s == "Neutral": return "🟡 Neutral"
+    if s == "Negative": return "🔴 Negative"
     return s
 
 # -----------------------
-# Main UI using Tabs (Live / Dataset / About)
+# Main content (right side)
 # -----------------------
-tabs = st.tabs(["Live Demo", "Dataset Mode", "About / Notes"])
+if selected_tab == "Live Demo":
+    # Modern main container with light brown gradient
+    st.markdown("""
+        <div style="
+            background: linear-gradient(135deg, #f5e9da 0%, #e9dbc7 100%);
+            border-radius: 28px;
+            padding: 48px 48px 32px 48px;
+            margin-top: 24px;
+            box-shadow: 0 6px 24px rgba(200,182,166,0.10);
+        ">
+            <h1 style="font-family: 'Segoe UI', Arial Black, sans-serif; color: #6e5849; font-size: 2.8rem; font-weight: 800; margin-bottom: 12px;">
+                Live Demo — quick single-run analysis
+            </h1>
+            <p style="color: #8d735b; font-size: 1.2rem; margin-bottom: 24px;">
+                Paste multiple comments separated by a blank line. Each paragraph becomes a comment.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
 
-with tabs[0]:
-    st.header("Live Demo — quick single-run analysis")
-    st.markdown("Paste multiple comments separated by a blank line. Each paragraph becomes a comment.")
-    user_text = st.text_area("Comments (separate by a blank line)", height=220, placeholder="Write or paste comments here...")
-    analyze_btn = st.button("🔎 Analyze")
+    # Gap between header and textarea
+    st.markdown("<div style='height:32px'></div>", unsafe_allow_html=True)
+
+    user_text = st.text_area(
+        "Comments (separate by a blank line)",
+        height=220,
+        placeholder="Write or paste comments here...",
+        label_visibility="collapsed"
+    )
+
+    # Gap between textarea and button
+    st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
+
+    analyze_btn = st.button("Analyze")
+
+    # Gap after button
+    st.markdown("<div style='height:32px'></div>", unsafe_allow_html=True)
 
     if analyze_btn:
-        if not user_text or not user_text.strip():
+        if not user_text.strip():
             st.warning("Please enter at least one comment.")
         else:
             raw_comments = [c.strip() for c in re.split(r"\n\s*\n", user_text) if c.strip()]
             total = len(raw_comments)
             progress_text = st.empty()
             progress_bar = st.progress(0)
+
             def _progress_cb(done, tot):
                 pct = int(done / tot * 100)
                 progress_text.info(f"Processing {done}/{tot} — {pct}%")
                 progress_bar.progress(pct)
+
             processed, cleaned_texts = analyze_texts(raw_comments, progress_callback=_progress_cb)
             progress_text.success("Analysis complete.")
             progress_bar.empty()
 
             out_df = pd.DataFrame(processed)
-
-            # Metrics
             pos = (out_df['sentiment'] == "Positive").sum()
             neu = (out_df['sentiment'] == "Neutral").sum()
             neg = (out_df['sentiment'] == "Negative").sum()
             total = len(out_df)
+
+            # Gap before metrics
+            st.markdown("<div style='height:32px'></div>", unsafe_allow_html=True)
+
+            st.markdown("""
+                <div style="background-color: #fff8f0; border-radius: 12px; padding: 18px; margin-top: 16px; box-shadow: 0 1px 6px rgba(200,182,166,0.04);">
+            """, unsafe_allow_html=True)
             col1, col2, col3, col4 = st.columns(4)
             col1.metric("Total comments", total)
             col2.metric("Positive", f"{pos} ({pos/total*100:.0f}%)")
             col3.metric("Neutral", f"{neu} ({neu/total*100:.0f}%)")
             col4.metric("Negative", f"{neg} ({neg/total*100:.0f}%)")
+            st.markdown("</div>", unsafe_allow_html=True)
 
-            left, right = st.columns([2,1])
+            # Gap before results
+            st.markdown("<div style='height:32px'></div>", unsafe_allow_html=True)
+
+            left, right = st.columns([2, 1])
             with left:
                 st.subheader("Results")
+                st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
                 sentiment_filter = st.selectbox("Filter sentiment", options=["All","Positive","Neutral","Negative"], index=0)
                 search_q = st.text_input("Search comments (text)")
                 df_show = out_df.copy()
@@ -143,28 +219,33 @@ with tabs[0]:
                     df_show = df_show[df_show['sentiment'] == sentiment_filter]
                 if search_q:
                     df_show = df_show[df_show['submission_text'].str.contains(search_q, case=False, na=False)]
+
                 df_display = df_show[["id","submission_text","sentiment","score","summary"]].rename(columns={"submission_text":"comment"})
                 df_display["sentiment_badge"] = df_display["sentiment"].apply(sentiment_color_label)
                 st.dataframe(df_display.drop(columns=["sentiment"]).rename(columns={"sentiment_badge":"sentiment"}), use_container_width=True)
 
             with right:
                 st.subheader("Word Cloud")
+                st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
                 wc_img = reporting.generate_wordcloud(cleaned_texts)
-                st.image(wc_img, use_column_width=True)
+                st.image(wc_img, use_container_width=True)
                 st.subheader("Top Keywords")
+                st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
                 kws = reporting.top_keywords(cleaned_texts, top_n=25)
                 st.table(pd.DataFrame(kws, columns=["keyword","count"]).head(20))
 
-            # PDF file name includes date/time
+            # PDF report
+            st.markdown("<div style='height:32px'></div>", unsafe_allow_html=True)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            pdf_bytes = reporting.make_pdf_report(out_df, wc_img,
-                                                  title="eConsultation Live Demo Report",
-                                                  project_logo_path=project_logo_path if os.path.exists(project_logo_path) else None,
-                                                  team_logo_path=team_logo_path if os.path.exists(team_logo_path) else None)
+            pdf_bytes = reporting.make_pdf_report(
+                out_df, wc_img, title="eConsultation Live Demo Report",
+                project_logo_path=project_logo_path if os.path.exists(project_logo_path) else None,
+                team_logo_path=team_logo_path if os.path.exists(team_logo_path) else None
+            )
             filename = f"econsult_report_{timestamp}.pdf"
             st.download_button("Download PDF report", data=pdf_bytes, file_name=filename, mime="application/pdf")
 
-with tabs[1]:
+elif selected_tab == "Dataset Mode":
     st.header("Dataset Mode — upload CSV / XLSX")
     st.markdown("CSV must contain a `submission_text` column. Optional: `id`, `stakeholder_type`.")
     uploaded = st.file_uploader("Upload CSV / XLSX file", type=["csv","xlsx","txt"])
@@ -237,7 +318,7 @@ with tabs[1]:
             with right:
                 st.subheader("Word Cloud")
                 wc_img = reporting.generate_wordcloud(cleaned_texts)
-                st.image(wc_img, use_column_width=True)
+                st.image(wc_img, use_container_width=True)
                 st.subheader("Top Keywords")
                 kws = reporting.top_keywords(cleaned_texts, top_n=40)
                 st.table(pd.DataFrame(kws, columns=["keyword","count"]).head(25))
@@ -259,13 +340,10 @@ with tabs[1]:
             filename = f"econsult_report_{timestamp}.pdf"
             st.download_button("Download PDF report", data=pdf_bytes, file_name=filename, mime="application/pdf")
 
-with tabs[2]:
+elif selected_tab == "About / Notes":
     st.header("About / Notes")
     st.markdown("""
 - Uses transformer summarization and sentiment models (heavier models by default with safe fallbacks).  
 - PDF includes project and team logos (if present in `assets/`).  
 - The app produces: sentiment analysis, a concise summary, a word cloud, and a word frequency list — available in both Live Demo and Dataset modes.  
 """)
-
-st.markdown("---")
-st.caption("MVP note: for production, add auth, background workers, better logging and monitoring.")
