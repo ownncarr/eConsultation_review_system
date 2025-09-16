@@ -32,7 +32,6 @@ with st.sidebar:
             st.markdown(
                 """
                 <div style="
-                    background: linear-gradient(135deg, #f5e9da 0%, #e9dbc7 100%);
                     border-radius: 24px;
                     padding: 32px 16px 24px 16px;
                     margin-bottom: 18px;
@@ -52,7 +51,7 @@ with st.sidebar:
     # Sidebar Option Menu with modern light brown colors
     selected_tab = option_menu(
         menu_title=None,
-        options=["Live Demo", "Dataset Mode", "About / Notes"],
+        options=["Live Demo", "Dataset Mode", "About"],
         icons=["box-arrow-up-right", "file-earmark-spreadsheet", "info-circle"],
         menu_icon="cast",
         default_index=0,
@@ -246,8 +245,22 @@ if selected_tab == "Live Demo":
             st.download_button("Download PDF report", data=pdf_bytes, file_name=filename, mime="application/pdf")
 
 elif selected_tab == "Dataset Mode":
-    st.header("Dataset Mode — upload CSV / XLSX")
-    st.markdown("CSV must contain a `submission_text` column. Optional: `id`, `stakeholder_type`.")
+
+    st.markdown("""
+        <div style="
+            background: linear-gradient(135deg, #f5e9da 0%, #e9dbc7 100%);
+            border-radius: 28px;
+            padding: 48px 48px 32px 48px;
+            margin-top: 24px;
+            box-shadow: 0 6px 24px rgba(200,182,166,0.10);
+        ">
+            <h1 style="font-family: 'Segoe UI', Arial Black, sans-serif; color: #6e5849; font-size: 2.8rem; font-weight: 800; margin-bottom: 12px;">
+                Dataset Mode — upload CSV / XLSX
+            </h1>
+            <p style="color: #8d735b; font-size: 1.2rem; margin-bottom: 24px;">
+                CSV must contain a `submission_text` column. Optional: `id`, `stakeholder_type`.
+        </div>
+    """, unsafe_allow_html=True)
     uploaded = st.file_uploader("Upload CSV / XLSX file", type=["csv","xlsx","txt"])
 
     if uploaded is not None:
@@ -340,8 +353,26 @@ elif selected_tab == "Dataset Mode":
             filename = f"econsult_report_{timestamp}.pdf"
             st.download_button("Download PDF report", data=pdf_bytes, file_name=filename, mime="application/pdf")
 
-elif selected_tab == "About / Notes":
-    st.header("About / Notes")
+elif selected_tab == "About":
+
+    st.markdown("""
+        <div style="
+            background: linear-gradient(135deg, #f5e9da 0%, #e9dbc7 100%);
+            border-radius: 28px;
+            padding: 48px 48px 32px 48px;
+            margin-top: 24px;
+            box-shadow: 0 6px 24px rgba(200,182,166,0.10);
+        ">
+            <h1 style="font-family: 'Segoe UI', Arial Black, sans-serif; color: #6e5849; font-size: 2.8rem; font-weight: 800; margin-bottom: 12px;">
+                About eConsult AI Reviewer
+            </h1>
+            <p style="color: #8d735b; font-size: 1.2rem; margin-bottom: 24px;">
+                An MVP Streamlit app for analyzing eConsultation comments using AI.
+        </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height:32px'></div>", unsafe_allow_html=True)
+
     st.markdown("""
 - Uses transformer summarization and sentiment models (heavier models by default with safe fallbacks).  
 - PDF includes project and team logos (if present in `assets/`).  
